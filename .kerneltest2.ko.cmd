@@ -1,0 +1,1 @@
+cmd_/home/pi/Documents/CSE221/korhan/kerneltest2.ko := ld -EL -r  -T ./scripts/module-common.lds --build-id  -o /home/pi/Documents/CSE221/korhan/kerneltest2.ko /home/pi/Documents/CSE221/korhan/kerneltest2.o /home/pi/Documents/CSE221/korhan/kerneltest2.mod.o
