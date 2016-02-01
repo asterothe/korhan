@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <sys/resource.h>
 
 typedef unsigned int uint;
 
@@ -456,7 +457,91 @@ static inline void measurepThread()
         printf(" min pthreadr_create time: %u\n", minTime);
 }
 
+void* doSomeThingContextSwitch(void *arg)
+{ 
+      int which = PRIO_PROCESS;
+      int pid;
+      int priority = -20;
+      int ret;
+      uint start = 0;
+      uint end   = 0;
+      int i =0, j=0,k=0;
+      int sum = 0;
+      int times[100]= {0};
+           char *message;
+     message = (char *) arg;
+     //printf("%s \n", message);
+      pid = getpid();
+      ret = setpriority(which, pid, priority);
+     
 
+
+      printf("pthread_created for context switch test  pid = %d ret =%d thread = %s :\n ", pid , ret, message);
+      for (j=0;j < 5; j++) 
+       {
+          for (i = 0;i< 5000; ++i)
+          {
+           sum = i + sum; 
+          start = rdtsc();
+          pthread_yield();
+          end = rdtsc();
+          if (k < 100)
+          times[k++]= end  - start;
+          }
+         for (i = 0;i< 5000; ++i)
+         {
+          sum = i-  sum;
+                   start = rdtsc();
+          pthread_yield();
+          end = rdtsc();
+          if (k < 100)
+          times[k++]= end  - start;
+
+         }
+       } 
+      printf("pthread_created for context switch test  pid = %d ret =%d :\n ", pid , ret);
+              for(k =0 ; k < 100; ++k)
+        {
+                printf("pthread_context switch  time: %u for thread = %s \n", times[k], message);
+        }
+
+      return NULL;
+}
+
+
+static inline void measurepeThreadContextSwitch() __attribute__((always_inline));
+static inline void measurepThreadContextSwitch()
+{
+        uint start = 0;
+        uint end   = 0;
+        int times[100];
+        int result[100];
+        int i = 0;
+        uint minTime = 1000000;
+        pthread_t tid[2];
+        
+  const char *message1 = "Thread 1";
+
+     const char *message2 = "Thread 2";
+ 
+         
+        //for(; i < 2; ++i)
+       // {
+ //               start = rdtsc();
+           //     result[i] = pthread_create(&(tid[i]), NULL, &doSomeThingContextSwitch, NULL);
+  //              end = rdtsc();
+    //            times[i] = end - start;
+   //             minTime = (minTime < end - start ? minTime : end - start);
+       // }
+
+        result[0] = pthread_create(&(tid[0]), NULL, &doSomeThingContextSwitch, (void *)message1);
+       result[1] = pthread_create(&(tid[1]), NULL, &doSomeThingContextSwitch, (void *)message2);
+       i =0;
+       for(; i < 2; ++i)
+
+       pthread_join( tid[i], NULL);
+
+}
 
 
 int main()
@@ -468,8 +553,8 @@ int main()
 //        measureClockRate();
 //        measureFork();
 
-         measurepThread();
-	
+   //      measurepThread();
+measurepThreadContextSwitch();	
 	//measureClockRate();
 	//measureClockRate();
 
