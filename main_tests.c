@@ -424,7 +424,7 @@ static inline void measureFork()
         }
         printf(" min fork time: %u\n", minTime);
 }
-
+/*
 void* doSomeThing(void *arg)
 {
    int a  = 19;
@@ -543,6 +543,81 @@ static inline void measurepThreadContextSwitch()
 
 }
 
+*/
+static inline void measureForkContextSwitch() __attribute__((always_inline));
+static inline void measureForkContextSwitch()
+{
+        uint start = 0;
+        uint end   = 0;
+        int times[100];
+        int result[100];
+        int i = 0, j= 0, k =0;
+        uint minTime = 1000000;
+        int mypid  =getpid();
+        int childpid =-2;
+        int ret;
+        int status = 0;
+        int sum = 0;
+
+int which = PRIO_PROCESS;
+      int priority = -20;
+
+
+        for(; i < 2; ++i)
+        {      
+                if (childpid != 0)
+                childpid= fork();
+        }
+        if (mypid != getpid())
+          {
+        printf(" I'm child  my pid = %d \n", getpid());
+      ret = setpriority(which, getpid(), priority);
+
+
+             for (j=0;j < 5; j++)
+       {
+          for (i = 0;i< 5000; ++i)
+          {
+           sum = i + sum;
+          start = rdtsc();
+          //pthread_yield();
+          sched_yield();
+          end = rdtsc();
+          if (k < 100)
+          times[k++]= end  - start;
+          }
+         for (i = 0;i< 5000; ++i)
+         {
+          sum = i-  sum;
+                   start = rdtsc();
+          //pthread_yield();
+//           printf("ping = %d\n", getpid());
+          sched_yield();
+          end = rdtsc();
+          if (k < 100)
+          times[k++]= end  - start;
+
+         }
+       }
+              for(k =0 ; k < 100; ++k)
+        {
+                printf("process_context switch  time: %u  \n", times[k] );
+        }
+
+
+        exit(0);
+      } 
+       else  if(mypid == getpid()) 
+       {
+        printf(" I'm parent \n");
+        //wait(NULL);
+        //waitpid(childpid, &ret, 0);
+        while(wait(&status) >0)
+                 ;
+        exit (0);
+        }
+}
+
 
 int main()
 {
@@ -554,7 +629,9 @@ int main()
 //        measureFork();
 
    //      measurepThread();
-measurepThreadContextSwitch();	
+  // for phread you need to compile with pthread flag 
+measureForkContextSwitch();
+// measurepThreadContextSwitch();	
 	//measureClockRate();
 	//measureClockRate();
 
