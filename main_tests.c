@@ -6,6 +6,9 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <sys/resource.h>
+#include <sys/time.h>
+
+#define ARRAY_SIZE 1024  * 256 
 
 typedef unsigned int uint;
 
@@ -99,6 +102,51 @@ static inline void measureClockRate()
 	printf("clock rate: %f Mhz\n", clockRate);
         printf("cycles = %d \n", overhead);
 }
+
+static inline void measureClockRate2() __attribute__((always_inline));
+
+static inline void measureClockRate2()
+{
+        uint start = 0;
+        uint end   = 0;
+        uint overhead = 0;
+struct timeval tvalBefore, tvalAfter;  
+     int i,j,k;
+     int sum;
+    for (k=0; k < 10; ++k)
+      {
+    gettimeofday (&tvalBefore, NULL);
+uint useccount =0;
+
+
+        start = rdtsc();
+        //sleep(10);
+
+          for (j=0;j <15000; j++)
+            {
+               for (i = 0;i< 5000; ++i)
+                sum = i + sum;
+              for (i = 0;i< 5000; ++i)
+               sum = i-  sum;
+    
+              }
+
+        end = rdtsc();
+
+
+    gettimeofday (&tvalAfter, NULL);
+     useccount = ((tvalAfter.tv_sec - tvalBefore.tv_sec)*1000000L
+           +tvalAfter.tv_usec) - tvalBefore.tv_usec;
+
+ printf(" time ellapsed in us = %u \n",useccount);
+        overhead = end - start;
+        float clockRate = overhead / useccount;
+        printf("cycles = %u \n", overhead);
+         
+        printf("clock rate: %f Mhz\n", clockRate);
+     }
+}
+
 
 uint inside = 0;
 void procedure0() { inside = rdtsc(); }
@@ -618,6 +666,56 @@ int which = PRIO_PROCESS;
         }
 }
 
+static inline void linked_list() __attribute__((always_inline));
+static inline void linked_list()
+{
+
+struct list_el {
+   int val;
+   //int a[1000];
+   struct list_el * next;
+};
+
+typedef struct list_el item;
+           uint start = 0;
+        uint end   = 0;
+
+   item * curr, * head;
+   int i;
+   int k =0;
+int times[ARRAY_SIZE];
+   head = NULL;
+   int max = 0;
+
+   for(i=0;i<ARRAY_SIZE;i++) {
+      curr = (item *)malloc(sizeof(item));
+      curr->val = i;
+      curr->next  = head;
+      head = curr;
+   }
+
+   curr = head;
+
+   while(curr) {
+     // printf("%d\n", curr->val);
+    start = rdtsc();
+      curr = curr->next ;
+     end = rdtsc();
+     times[k++] = end -start;
+
+    }
+
+    for (i = 0; i<ARRAY_SIZE; i++)
+    {
+        if( times[i] > max )
+             max = times[i] ;
+//          if(times[i] > 1000)
+         printf(" latency = %u cycles for i = %d \n", times[i], i);
+    }
+    printf("max = %d \n", max);
+
+}
+
 
 int main()
 {
@@ -625,12 +723,12 @@ int main()
 	
 //	sleep(1);
 
-//        measureClockRate();
+     //   measureClockRate2();
 //        measureFork();
-
+         linked_list();
    //      measurepThread();
   // for phread you need to compile with pthread flag 
-measureForkContextSwitch();
+//measureForkContextSwitch();
 // measurepThreadContextSwitch();	
 	//measureClockRate();
 	//measureClockRate();
@@ -638,7 +736,6 @@ measureForkContextSwitch();
 //	measureOverhead();
 	//measureOverhead();
 	
-	//measureProcedure();
 	//measureProcedure();
 	
 //	measureSysCall();
