@@ -10,12 +10,7 @@
 
 #define ARRAY_SIZE 1024  * 32 
 
-
-
 typedef unsigned int uint;
-
-
-
 
 static inline unsigned int rdtsc() __attribute__((always_inline));
 static inline unsigned int rdtsc()
@@ -671,48 +666,51 @@ int which = PRIO_PROCESS;
         }
 }
 
-static inline void linked_list() __attribute__((always_inline));
-static inline void linked_list()
+static inline void linked_list(uint array_size) __attribute__((always_inline));
+static inline void linked_list(uint array_size)
 //void linked_list()
 {
 
 struct list_el {
-   int val;
-//   int a[10];
+  // int val;
+   //int a[15];
   struct list_el * next;
 };
 
 typedef struct list_el item;
-           uint start = 0;
-        uint end   = 0;
+           unsigned long start = 0;
+        unsigned long  end   = 0;
 
    item * curr, * head , *delptr;
    int i;
    int k =0;
-uint times[ARRAY_SIZE] = {0};
-int values[ARRAY_SIZE]={0};
+//int times[ARRAY_SIZE] = {0};
+//int values[ARRAY_SIZE]={0};
    head = NULL;
-   uint max = 0;
-   uint sum = 0;
-   uint array_size = ARRAY_SIZE;
-   for(i=0;i<ARRAY_SIZE;i++) {
+   int max = 0;
+   //uint array_size = ARRAY_SIZE; 
+
+   for(i=0;i<array_size;i++) {
       curr = (item *)malloc(sizeof(item));
-      curr->val = i;
+    //  curr->a[7]= i;
       curr->next  = head;
       head = curr;
    }
 
    curr = head;
-
+    start = rdtsc();
    while(curr) {
      // printf("%d\n", curr->val);
-    start = rdtsc();
-   //  values[k]= curr->val;
+    //start = rdtsc();
+//     values[k]= curr->val;
       curr = curr->next ;
-     end = rdtsc();
-     times[k++] = end -start;
+    // end = rdtsc();
+     //times[k++] = end -start;
 
     }
+    end = rdtsc();
+
+   
 
    curr = head;
    
@@ -724,19 +722,26 @@ int values[ARRAY_SIZE]={0};
     }
 
 
- 
-    for (i = 0; i<ARRAY_SIZE; i++)
-    {
-        sum += times[i];
-        if( times[i] > max )
-             max = times[i] ;
+//   printf("  average = %f \n" , (float)((unsigned long)(end - start)/ array_size));
+
+ //  printf("end = %lu , start = %lu, Array Size = %u \n", end, start, array_size);
+
+  // printf("size of = %d \n", sizeof(item));
+//  printf("  array size = %u , size of each item = %d,   average = %f \n" ,array_size , sizeof(item),  (float)((unsigned long)(end - start)/ array_size));
+
+
+printf("  array size  ( = %u) *  size of each item(= %d) = %u,   average = %f \n" , array_size , sizeof(item) , array_size * sizeof(item) ,  (float)((unsigned long)(end - start)/ array_size));
+
+
+  //  for (i = 0; i<ARRAY_SIZE; i++)
+   // {
+   //     if( times[i] > max )
+    //         max = times[i] ;
 //          if(times[i] > 1000)
 //         printf(" latency = %u cycles for i = %d \n", times[i], i);
 //           printf(" val = %d \n", values[i]);
-    }
-    printf("max = %u  sum = %u \n", max, sum);
-    printf(" average = %f \n", (float)(sum / array_size));
-
+   // }
+   // printf("max = %d \n", max);
 
 }
 
@@ -744,14 +749,23 @@ int values[ARRAY_SIZE]={0};
 int main()
 {
         int i =0;
+        unsigned int j;
 	init_perfcounters (1, 0); 
 	
 //	sleep(1);
 
      //   measureClockRate2();
 //        measureFork();
-         for  (i = 0 ; i < 20 ; i++)
-         linked_list();
+
+         for(j =512; j <= 33554432 ; j*=2 )
+           {
+         for  (i = 0 ; i < 10 ; i++)
+{
+         
+         linked_list(j);
+         init_perfcounters(1,0);
+}
+           }
    //      measurepThread();
   // for phread you need to compile with pthread flag 
 //measureForkContextSwitch();
